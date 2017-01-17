@@ -1,0 +1,68 @@
+%% MH algorithm vs. Accept-Reject algorithm
+% target density: f(x) = Gamma(alpha, beta)
+% proposal density: g(y) = Gamma(a,b), where a=floor(alpha), b=floor(alpha)/alpha
+%
+clear
+clc
+
+%% target density, proposal density
+alpha = 4.85;
+beta = 1;
+
+x = 0:0.1:20;
+fx = gampdf(x, alpha, beta);    % target density: f(x)
+figure
+plot(x, fx,'r-')
+hold on
+
+a = 5;
+b = 1;
+gy = gampdf(x, a, b);           % proposal density: g(y)
+plot(x, gy,'b-')
+
+M = ceil((max(fx./gy))*100)/100;
+plot(x, gy*M,'g-')
+hold off
+
+%% Accept-Reject algorithm
+Nsim = 5*10^4;
+y = gamrnd(a, b, 1, Nsim);  % proposal distribution g(y)
+u = rand(1, Nsim);          
+yGamma = [];
+for i=1:Nsim
+    if(u(i)<=gampdf(y(i),alpha,beta)/(M*gampdf(y(i),a,b)))
+        yGamma = [yGamma,y(i)];
+    end
+end
+figure,
+plot(x, fx,'r-')
+hold on
+histogram(yGamma,100,'Normalization','pdf')
+hold off
+
+%% MH algorithm
+% f(x)=Gamma(alpha, beta), q(y|x) = Gamma(a,b)
+% rho = f(y)*q(x)/(f(x)*q(y))
+qy = gamrnd(a, b, 1, Nsim);  % proposal distribution q(y|x)=g(y)
+X = rand(1,1);      % initialize chain {Xt}
+for i=1:Nsim
+    rho = gampdf(qy(i),alpha,beta)*gampdf(X(i),a,b)/(gampdf(X(i),alpha,beta)*gampdf(qy(i),a,b)); % rho
+    u = rand(1,1);  
+    if(u<=rho)
+        X = [X,qy(i)];
+    else
+        X = [X, X(i)];
+    end
+end
+figure,
+plot(x, fx,'r-')
+hold on
+histogram(X,100,'Normalization','pdf')
+
+%% compare
+figure
+autocorr(yGamma,100)
+
+figure
+autocorr(X,100)
+
