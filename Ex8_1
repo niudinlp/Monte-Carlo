@@ -1,0 +1,27 @@
+%% slice sample
+% f(x) = 0.5*exp(-0.5*x), g(u) = -2*log(2*u)
+% steps:
+% 1. u|X ~ U(0,f(x))
+% 2. X|u ~ U(0,g(u)), where g(u) = f(x) inverse
+clear
+clc
+
+Nsim = 5*10^4;
+Xt = rand(1,1);      % initialize chain {Xt}
+for i=1:Nsim
+    fx = 0.5*exp(-0.5*Xt(i));
+    u = unifrnd(0,fx,1,1);          % step1
+    gu = -2*log(2*u);
+    Xt = [Xt, unifrnd(0,gu,1,1)];   % step2
+end
+
+x = 0:0.1:20;
+y = 0.5*exp(-0.5*x);
+figure,
+plot(x, y)
+hold on
+histogram(Xt,100,'Normalization','pdf')
+hold off
+
+figure
+autocorr(Xt,100)
