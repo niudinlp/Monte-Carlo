@@ -1,18 +1,18 @@
 %% slice sample
 % Monte Carlo Statistical Methods
-% f(x) = 0.5*exp(-0.5*x), g(u) = -2*log(2*u)
+% f(x) = 0.5*exp(-0.5*x), f1(x) = exp(-0.5*x), g(u) = -2*log(u)
 % steps:
-% 1. u|X ~ U(0,f(x))
-% 2. X|u ~ U(0,g(u)), where g(u) = f(x) inverse
+% 1. u|X ~ U(0,f1(x))
+% 2. X|u ~ U(0,g(u)), where g(u) = inv(f1(x)) 
 clear
 clc
 
 Nsim = 5*10^4;
 Xt = rand(1,1);      % initialize chain {Xt}
 for i=1:Nsim
-    fx = 0.5*exp(-0.5*Xt(i));
+    fx = exp(-0.5*Xt(i));           % f1(x)
     u = unifrnd(0,fx,1,1);          % step1
-    gu = -2*log(2*u);
+    gu = -2*log(u);
     Xt = [Xt, unifrnd(0,gu,1,1)];   % step2
 end
 
