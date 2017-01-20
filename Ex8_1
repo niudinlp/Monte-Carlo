@@ -1,4 +1,5 @@
 %% slice sample
+% Monte Carlo Statistical Methods
 % f(x) = 0.5*exp(-0.5*x), g(u) = -2*log(2*u)
 % steps:
 % 1. u|X ~ U(0,f(x))
