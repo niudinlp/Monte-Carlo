@@ -1,0 +1,51 @@
+%% Gibbs sample
+% theta ~ beta(a,b)
+% X|theta ~ bino(n, theta)
+% theta|X ~ beta(x+a, n-x+b)
+% construct chain {Xt} and {TAt}
+% step1: X ~ f(x|y)=bino(n, theta)
+% step2: Y ~ f(y|x)=beta(x+a, n-x+b)
+% step3: goto 1
+% the stationary function of chain {Xt} is beta-binomial distribution
+%                                    g(n+1)          beta(x+a,n-x+b)
+% p(x) = integrate(p(x|p)*f(p)) =----------------*-------------------  
+%                                 g(x+1)*g(n-x+1)      beta(a, b)
+% g(n+1) = gamma(n+1)
+% the stationary function of chain {TAt} is beta(a,b)
+clear
+clc
+% initial param.
+Nsim = 10*10^4;
+n = 15;
+a = 3;
+b = 7;
+
+% Gibbs sample
+TAt = betarnd(a,b,1,1);     % initialize chain {TAt}
+Xt = binornd(n,TAt,1,1);    % initialize chain {Xt}
+for i=2:Nsim 
+    Xtmp = binornd(n,TAt(i-1),1,1);         % step1
+    Xt = [Xt, Xtmp];
+    TAtmp = betarnd(Xtmp+a,n-Xtmp+b,1,1);   % step2
+    TAt = [TAt, TAtmp];
+end
+
+% plot chain {TAt}: beta(a,b)
+x = 0:0.01:1;
+fbeta = betapdf(x, a, b);
+figure,
+plot(x,fbeta,'r')
+hold on
+histogram(TAt,100,'Normalization','pdf')
+hold off
+
+% plot chain {Xt}: binomial distribution
+x = 1:n;
+fbino = (gamma(n+1)./(gamma(x+1).*gamma(n-x+1))).*beta(x+a,n-x+b)./beta(a,b);
+figure,
+bar(x,fbino,'r')
+hold on
+edges = 0.5:1:15.5;
+histogram(Xt,edges,'FaceColor','b','Normalization','pdf')
+
+
