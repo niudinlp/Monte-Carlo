@@ -1,0 +1,29 @@
+%% inverse gamma distribution
+% Igamma(x;a,b)= b^a*((1/x)^(a+1))*exp(-b/x)/gamma(a) 
+% In matlab, gamma(x;a,b) ~ (1/b)^a * x^(a-1) * exp(-x/b)
+% 
+clear
+clc
+
+a = 2;
+b = 2;
+% inverse gamma function
+x = 0.01:0.01:10;
+y1 = (b^a)*((1./x).^(a+1)).*exp(-b./x)/gamma(a);
+figure, 
+plot(x, y1, 'r-')
+hold on
+% % gamma function transfer
+% y = 1./x;
+% rnd = gampdf(y, a, 1/b)./(x.^2);
+% plot(x, rnd,'b-.')
+% hold off
+
+% sample
+Nsim = 5*10^4;
+rnd = 1./gamrnd(a, 1/b, 1, Nsim);
+edges = 0:0.1:10;
+histogram(rnd,edges,'FaceColor','b','Normalization','pdf')
+hold off
+
+
