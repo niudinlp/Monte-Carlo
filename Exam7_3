@@ -1,0 +1,43 @@
+%% Gibbs sample marginal posterior distribution
+% likelihood: f(X|theta,sigma) = N(theta, sigma^2)
+% prior: f(theta) = N(theta0, tau^2)
+%        f(sigma^2) = IG(a, b), inverse-gamma distribution 
+% Goal: use Gibbs sample to generate marginal posterior distribution 
+% step1: theta ~ f(theta|X,sigma)
+% step2: sigma ~ f(sigma|X,theta)
+% step3: goto 1
+% the chain {TAt} approach f(theta|X), chain {SGt} approach f(sigma|X)
+clear
+clc
+% initial param.
+Nsim = 10^5;
+a = 3;
+b = 3;
+tau = sqrt(10);
+theta0 = 5;
+X = [91,504,557,609,693,727,764,803,857,929,970,1043,1089,1195,1384,1713];  % raw data
+X = log(X);
+N = length(X);
+Xbar = mean(X);
+% Gibbs sample
+TAt = normrnd(theta0, tau);     % initialize chain {TAt}
+SGt = 1/gamrnd(a, 1/b);         % initialize chain {SGt}
+for i=2:Nsim
+    % step1
+    FA1 = SGt(i-1)^2/(SGt(i-1)^2+N*tau^2);                
+    TAtmp = normrnd(FA1*theta0+(1-FA1)*Xbar, sqrt(FA1)*tau);  
+    TAt = [TAt, TAtmp];
+    % step2
+    FA2 = sum((X-TAtmp).^2)/2;
+    SGtmp = 1/gamrnd(a+N/2, 1/(FA2+b));
+    SGt = [SGt, SGtmp];
+end
+% plot
+figure,
+histogram(TAt,100,'Normalization','pdf')
+
+figure,
+histogram(SGt,100,'Normalization','pdf')
+
+
+
