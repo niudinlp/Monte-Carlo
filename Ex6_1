@@ -1,0 +1,41 @@
+%% Metropolis-Hastings algorithm
+% target density: f(x) = Beta(2.7,6.3)
+% proposal density: q(y|x) = unif(0,1)
+% rho = min{1,f(y)q(x|y)/(f(x)q(y|x))}
+% steps:
+% 1. generate y ~ q(y|x)
+% 2. if u<=ratio, accpet
+%    else, reject
+% 3. goto 1
+clear
+clc
+
+a = 2.7;
+b = 6.3; % beta(a,b)
+
+%% betapdf
+x = 0:0.01:1;
+bet = betapdf(x, a, b);
+figure, 
+plot(x, bet, 'r')
+hold on
+
+%% MH algorithm
+Nsim = 5*10^4;
+qy = rand(1,Nsim);  % proposal distribution q(y|x)
+X = rand(1,1);      % initialize chain {Xt}
+for i=1:Nsim
+    rho = betapdf(qy(i),a,b)/betapdf(X(i),a,b); % rho
+    u = rand(1,1);  
+    if(u<=rho)
+        X = [X,qy(i)];
+    else
+        X = [X, X(i)];
+    end
+end
+histogram(X,100,'Normalization','pdf')
+hold off
+
+figure,
+plot(X(49800:50001))
+

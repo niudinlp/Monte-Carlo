@@ -1,0 +1,41 @@
+%% Example 6.4: generate N(0,1) using random walk Metropolis-Hastings 
+% algorithm
+% target function: f(x) = N(0,1)
+% proposal function: q(y|x) = g(y-x) = u(-delta, delta)
+% rho = min{1, exp((x^2-y^2)/2)}
+clear
+clc
+
+Nsim = 5*10^4;
+mu = 0;
+sigma = 1;
+x = -4:0.1:4;
+yNorm = normpdf(x, mu, sigma);
+
+%% random walk MH
+delta = [0.1, 1, 10];
+for loop=1:length(delta)
+    figure,
+    plot(x, yNorm, 'r');
+    hold on
+
+    Xt = normrnd(mu, sigma, 1,1);        % initialize chain {Xt}
+    gy = unifrnd(-delta(loop),delta(loop),1,Nsim);   % g(y-x) 
+    u = rand(1, Nsim);
+    for i=1:Nsim
+        rho = exp((Xt(i)^2-(Xt(i)+gy(i))^2)/2);
+        if(u(i)<=rho)
+            Xt = [Xt, Xt(i)+gy(i)];
+        else
+            Xt = [Xt, Xt(i)];
+        end
+    end
+    histogram(Xt,100,'Normalization','pdf')
+    hold off
+
+    figure, 
+    plot(Xt(9500:10000))
+    
+    figure
+    autocorr(Xt,100)     % autocorrelation
+end

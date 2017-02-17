@@ -1,0 +1,40 @@
+%% subgraph slice sampler
+% f(x) = N(-3,1), 0<=x<=1, f1(x) = exp{-(x+3)^2/2}
+% NOTE: the range of x is [0, 1]. 
+% steps:
+% 1, initialization: X0 in [0, 1]
+% 2, vertical slice: u(t+1) ~ U(0, f(x(t)))
+% 3, horizontal slice: X(t+1) ~ U{x: f1(x)>=u(t+1)}
+clear
+clc
+
+Nsim = 5*10^3;
+mu = -3;
+sigma = 1;
+x = 0:0.01:1;
+y = exp(-(x-mu).^2/2);
+figure, 
+plot(x, y, 'r')
+hold on
+
+Xt = rand(1,1);      % initialize chain {Xt}
+for i=1:Nsim
+    if((Xt(i)>=0)&&(Xt(i)<=1))
+        fx = exp(-(Xt(i)-mu)^2/2);      % f1(x)
+    else
+        fx = 0;
+    end
+    u = unifrnd(0,fx,1,1);          % step1
+    plot(Xt(i), u, 'r.')
+    gu = min(sqrt(-2*log(u))-3,1);
+    tmp = unifrnd(0,gu,1,1);
+    Xt = [Xt, tmp];    
+end
+hold off
+
+figure
+histogram(Xt,100,'Normalization','pdf')
+
+figure
+autocorr(Xt,100)
+
