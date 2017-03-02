@@ -1,0 +1,26 @@
+%% censored-data model
+clear
+clc
+
+a = 3.5;
+N = 10^2;
+
+mu = 3;
+sigma = 1;
+X = normrnd(mu,sigma,1,N);
+histogram(X,100,'FaceColor','g','Normalization','pdf')
+
+% unobserved data
+range = a:0.05:7;
+Z = normpdf(range,mu,sigma)/(1-normcdf(a,mu,sigma));
+figure,
+plot(range, Z, 'r');
+hold on
+
+idx = find(X>=a);
+histogram(X(idx),100,'FaceColor','g','Normalization','pdf')
+hold off
+
+% censored data
+X(idx) = a;
+save('Exam7_4data.mat', 'X')
