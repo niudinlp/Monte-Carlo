@@ -1,0 +1,35 @@
+%% truncated normal generator
+% X ~ N(0,2), -2<x<2
+clear
+clc
+
+mu = 0;
+sigma = 2;
+
+lo = 0;
+hi = 2;
+x = -3:0.05:3;
+
+% standard
+pd = makedist('Normal','mu',mu,'sigma',sigma);
+t = truncate(pd,lo,hi);
+figure;
+plot(x,pdf(pd,x),'Color','red','LineWidth',2)
+hold on;
+plot(x,pdf(t,x),'Color','blue','LineWidth',2)
+
+% contrast
+x = lo:0.05:hi;
+Phi = normcdf(hi,mu,sigma);
+Plo = normcdf(lo,mu,sigma);
+pdf = normpdf(x,mu,sigma)/(Phi-Plo);
+plot(x, pdf, 'g')
+
+% sample
+Nsim = 5*10^4;
+PRnd = unifrnd(Plo, Phi, 1, Nsim);
+X = norminv(PRnd, mu, sigma);
+edges = lo:0.1:hi;
+histogram(X,edges,'FaceColor','g','Normalization','pdf')
+hold off
+
