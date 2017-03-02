@@ -1,0 +1,41 @@
+%% censored-data model:
+% observe data: x1...xm ~ f(x-theta)
+% censored data: xm+1...xn = a
+% f(X|theta) ~ exp{-(x-theta)^2/2} * [1-F(a-theta)]^(n-m)
+% using missing-data model:
+% assume prior f(theta) = 1, then
+% f(X|theta,Z) ~ exp{-(x-theta)^2/2} * exp{-(z-theta)^2/2}
+% then, use Gibbs sample to get posterior distribution:
+% f(theta|X) and f(z|X)
+clear
+clc
+
+% initial para.
+Nsim = 10^4;
+sigma = 1;
+a = 3.5;
+
+load('Exam7_4data.mat')     % load data: X ~ N(3,1), X(X>=3.5)=3.5
+n = length(X);
+idx = find(X<a);
+m = length(idx);
+ObsX = X(idx); 
+Xbar = mean(ObsX);
+
+% Gibbs sample
+theta = rand(1);       % init 
+Zbar = a;         
+for i=2:Nsim
+    Z = trunor(theta(i-1), sigma, a, 20, n-m);
+    Zbar = [Zbar, mean(Z)];
+    
+    tmp = normrnd((m*Xbar+(n-m)*Zbar(i))/n, 1/n);
+    theta = [theta, tmp];
+end
+
+figure,
+histogram(theta(2:Nsim),100,'FaceColor','r','Normalization','pdf')
+
+figure,
+histogram(Zbar(2:Nsim),100,'FaceColor','r','Normalization','pdf')
+
