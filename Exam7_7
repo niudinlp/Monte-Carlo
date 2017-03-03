@@ -1,0 +1,32 @@
+%% missing-data multinomial model
+% using Gibbs sample to generate posterior distribution p(theta|x)
+% M(n; 1/2+theta/4,(1-theta)/4,(1-theta)/4,theta/4)
+% using latent variable z:
+% (z,x1-z,x2,x3,x4) ~ M(n; 1/2,theta/4,(1-theta)/4,(1-theta)/4,theta/4)
+% prior p(theta) = 1
+% 
+clear
+clc
+
+Nsim = 10^4;
+X = [125, 18, 20, 34];      % data sample for 4 categories
+
+Ttmp = rand(1);
+Ztmp = rand(1);
+Z = zeros(1, Nsim);
+theta = zeros(1, Nsim);
+for i=1:Nsim
+    Ztmp = binornd(X(1), Ttmp/(Ttmp+2));
+    Z(i) = Ztmp;
+    
+    Ttmp = betarnd(Ztmp+X(4)+1, X(2)+X(3)+1);
+    theta(i) = Ttmp;
+end
+
+edges = min(theta):0.01:max(theta);
+figure,
+histogram(theta,edges,'FaceColor','r','Normalization','pdf')
+
+edges = min(Z):1:max(Z);
+figure,
+histogram(Z,edges,'FaceColor','r','Normalization','pdf')
