@@ -1,0 +1,60 @@
+%% generalized missing-data Multinomial model
+% Gibbs sample
+% example:
+% observed genotype frequencies on blood type data
+%   Genotype    Prob.   observed    Prob.           Frequency
+%    AA          pA^2      A      pA^2 + 2*pApO      nA = 186
+%    AO        2*pO*pA          
+%    BB          pB^2      B      pB^2 + 2*pBpO      nB = 38
+%    BO        2*pO*pB
+%    AB        2*pA*pB     AB        pA*pB           nAB = 13
+%    OO         pO^2       O         pO^2            nO = 284
+% observed data likelihood:
+% p(X) = Mul(n, pA^2+2*pA*pO, pB^2+2*pBpO, pA*pB, pO^2)
+%
+% complete-data likelihood:
+% p(X,Z) = Mul(n, pA^2,2*pA*pO,pB^2,2*pBpO,pA*pB,pO^2)
+%        ~ (pA^2)^zA * (2*pA*pO)^(nA-zA) * (pB^2)^zB * (2*pB*pO)^(nB-zB) *
+%        (pA*pB)^(nAB) * (pO^2)^nO
+%
+% prior:
+% p(pA, pB, pO) = Dir(1,1,1)
+%
+% full conditionals:
+% p(pA,pB,pO|Z,X) = Dir(nA+nAB+zA+1, nB+nAB+zB+1, nA+nB+2*nO-zA-zB+1) 
+% p(zA|pA,pB,pO,X) = Bin(nA, pA^2/(pA^2+2*pA))
+% p(zB|pA,pB,pO,X) = Bin(nB, pB^2/(pB^2+2*pB))
+%
+% Using Gibbs sample to generate p(pA|X), p(pB|X), p(pO|X)
+%
+clear
+clc
+% initial
+Nsim = 10^4;
+nA = 186;
+nB = 38;
+nAB = 13;
+nO = 284;
+p = zeros(3, Nsim);     % p = [pA; pB; pO]
+Z = zeros(2, Nsim);     % Z = [zA; zB]
+
+% Gibbs sample
+tmp = DirRnd([1,1,1]);    % prior Dir(1,1,1)
+for i=1:Nsim
+    Z(1,i) = binornd(nA, tmp(1)^2/(tmp(1)^2+2*tmp(1)));  % zA
+    Z(2,i) = binornd(nB, tmp(2)^2/(tmp(2)^2+2*tmp(2)));  % zB
+    tmp = DirRnd([nA+nAB+Z(1,i)+1,nB+nAB+Z(2,i)+1,nA+nB+2*nO-Z(1,i)-Z(2,i)+1]);
+    p(:,i) = tmp;
+end
+
+figure,
+histogram(p(1,:),100,'FaceColor','r','Normalization','pdf')
+title('pA')
+
+figure,
+histogram(p(2,:),100,'FaceColor','g','Normalization','pdf')
+title('pB')
+
+figure,
+histogram(p(3,:),100,'FaceColor','b','Normalization','pdf')
+title('pO')
