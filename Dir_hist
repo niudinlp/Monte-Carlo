@@ -1,0 +1,40 @@
+%% Dirichlet generator
+% generating the Dirichlet from Gamma RVs
+% step 1: draw z(i) from gamma(alpha(i), 1)
+% step 2: q(i) = z(i)/(sum(z)), then q ~ Dir(alpha)
+%
+clear
+clc
+
+alpha = [2, 5, 15];
+q1 = 0:0.01:1;
+q2 = 0:0.01:1;
+[Q1,Q2] = meshgrid(q1, q2);
+Q3 = 1 - Q1 - Q2;
+idx = find(Q3<0);
+Q1(idx) = NaN;
+Q2(idx) = NaN;
+Q3(idx) = NaN;
+
+cont = gamma(sum(alpha))/(gamma(alpha(1))*gamma(alpha(2))*gamma(alpha(3)));
+f = cont * Q1.^(alpha(1)-1) .* Q2.^(alpha(2)-1) .* Q3.^(alpha(3)-1);
+surf(Q1,Q2,Q3,f)
+
+
+% sample
+Nsim = 10^4;
+K = length(alpha);
+z = zeros(K,1);
+q = zeros(K,Nsim);
+for i=1:Nsim
+    for j=1:K
+       z(j) = gamrnd(alpha(j),1);
+    end
+    q(:,i) = z/sum(z);
+end
+figure,
+histogram(q(1,:))
+figure,
+histogram(q(2,:))
+figure,
+histogram(q(2,:))
